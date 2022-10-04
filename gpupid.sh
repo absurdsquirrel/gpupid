@@ -1,7 +1,7 @@
 #!/bin/bash
 
 TEMP=40
-FANMAX=80
+FANMAX=100
 FANMIN=40
 SETPOINT=40
 Kp=3.25
@@ -14,6 +14,7 @@ TIMEDELTA=0
 LAST_t=$(date +%s)
 LAST_err=0
 TARGETFANSPEED=40
+CURRENT_TARGET=0
 
 get_temp() {
 	TEMP=$(nvidia-settings -q "[gpu:0]/GPUCoreTemp" -t)
@@ -21,6 +22,10 @@ get_temp() {
 
 enable_fan_control() {
 	nvidia-settings -a "[gpu:0]/GPUFanControlState=1"
+}
+
+get_target_fan_speed() {
+	CURRENT_TARGET=$(nvidia-settings -q "[fan:0]/GPUTargetFanSpeed" -t)
 }
 
 set_fan_speed() {
@@ -68,12 +73,18 @@ desired_fan_speed() {
 }
 
 enable_fan_control
+get_target_fan_speed
 delta_t
 while :
 do
 	sleep 10
 	desired_fan_speed
-	set_fan_speed $TARGETFANSPEED
+	get_target_fan_speed
+	if [ $CURRENT_TARGET == $TARGETFANSPEED ]; then
+		continue
+	fi
+	$(set_fan_speed $TARGETFANSPEED)
+	echo "$(date +%s) set fan speed ${TARGETFANSPEED}%"
 done
 
 set_fan_speed 40
