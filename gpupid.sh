@@ -1,12 +1,19 @@
 #!/bin/bash
 
-TEMP=40
+# Variables you want to adjust
+INTERVAL=5		# how often (in seconds) to update
+SETPOINT=40		# desired temperature (in celcius)
+# coefficients for PID math
+Kp=3.25			# proportional
+Ki=0.5			# integral
+Kd=2			# derivative
+
+# May want to adjust these, but probably best as-is
 FANMAX=100
 FANMIN=40
-SETPOINT=40
-Kp=3.25
-Ki=0.5
-Kd=2
+
+# These are all updated by the script. No need to change anything.
+TEMP=40
 ERROR=0
 ACCUMULATED=0
 DERIVATIVE=0
@@ -70,6 +77,10 @@ desired_fan_speed() {
 	min $FANMAX $target
 	max $FANMIN $target
 	TARGETFANSPEED=$target
+	if [ $ACCUMULATED -lt -3000 ]; then
+		echo "$(date) [INFO] Integral very negative. Reset to 0."
+		ACCUMULATED=0
+	fi
 }
 
 enable_fan_control
@@ -77,14 +88,14 @@ get_target_fan_speed
 delta_t
 while :
 do
-	sleep 10
+	sleep $INTERVAL
 	desired_fan_speed
 	get_target_fan_speed
 	if [ $CURRENT_TARGET == $TARGETFANSPEED ]; then
 		continue
 	fi
-	$(set_fan_speed $TARGETFANSPEED)
-	echo "$(date +%s) set fan speed ${TARGETFANSPEED}%"
+	set_fan_speed $TARGETFANSPEED > /dev/null 2>&1 &
+	echo "$(date) [INFO] Set fan speed ${TARGETFANSPEED}%"
 done
 
 set_fan_speed 40
