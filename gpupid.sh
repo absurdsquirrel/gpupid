@@ -66,7 +66,8 @@ get_integral() {
 }
 
 get_derivative() {
-	DERIVATIVE=$(("$(($1 - LAST_err)) / $2"))
+#	DERIVATIVE=$(("$(($1 - LAST_err)) / $2"))
+  DERIVATIVE=$(bc <<< "scale=1; ($1 - $LAST_err) / $2")
 	LAST_err=$1
 }
 
@@ -84,8 +85,8 @@ desired_fan_speed() {
 	get_integral $ERROR $TIMEDELTA
 	get_derivative $ERROR $TIMEDELTA
 	local target=
-	target=$(bc <<< "$ERROR * $Kp + $ACCUMULATED * $Ki + $DERIVATIVE * $Kd")
-	# echo "[DEBUG] target: $target = $ERROR * $Kp + $ACCUMULATED * $Ki + $DERIVATIVE * $Kd"
+	target=$(bc <<< "scale=1; $ERROR * $Kp + $ACCUMULATED * $Ki + $DERIVATIVE * $Kd")
+	 echo "[DEBUG] target: $target = $ERROR * $Kp + $ACCUMULATED * $Ki + $DERIVATIVE * $Kd"
 	# guard against numbers -1 < target < 1
 	if [[ "$target" =~ ^-?\.[0-9]+$ ]]; then
 		target=0

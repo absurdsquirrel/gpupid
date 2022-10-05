@@ -14,7 +14,6 @@ Some tips:
   - keep Ki _really_ small or the script will just ramp the fan way up
 - D looks at the direction the temperature is moving and responds aggressively to big changes
   - keep Kd large to stay ahead of the curve; will ramp up quickly when temp spikes, and counteract P & I when the temp starts coming down.
-  - Ignores temp changes less then 1C/second (averaged over the sample period)
 - longer polling intervals will give the fans time to stabilize the temp without ramping all the way up, but they will also respond less quickly as temp changes
 
 ![](docs/engineer.jpg)
