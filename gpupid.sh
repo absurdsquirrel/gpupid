@@ -2,7 +2,7 @@
 
 # Variables you want to adjust
 # coefficients for PID math
-Kp=0.50         # proportional
+Kp=2.00       # proportional
 Ki=0.05         # integral
 Kd=10.0         # derivative
 
@@ -34,7 +34,7 @@ get_temp() {
 }
 
 enable_fan_control() {
-	nvidia-settings -a "[gpu:0]/GPUFanControlState=1" > /dev/null &2>1 &
+	nvidia-settings -a "[gpu:0]/GPUFanControlState=1" > /dev/null 2>&1 &
 	echo "$(date) Fan control enabled"
 }
 
@@ -66,7 +66,7 @@ get_integral() {
 }
 
 get_derivative() {
-	DERIVATIVE=$(("$(($1 - $LAST_err)) / $2"))
+	DERIVATIVE=$(("$(($1 - LAST_err)) / $2"))
 	LAST_err=$1
 }
 
@@ -83,7 +83,9 @@ desired_fan_speed() {
 	delta_t
 	get_integral $ERROR $TIMEDELTA
 	get_derivative $ERROR $TIMEDELTA
-	local target=$(bc <<< "$ERROR * $Kp + $ACCUMULATED * $Ki + $DERIVATIVE * $Kd")
+	local target=
+	target=$(bc <<< "$ERROR * $Kp + $ACCUMULATED * $Ki + $DERIVATIVE * $Kd")
+	# echo "[DEBUG] target: $target = $ERROR * $Kp + $ACCUMULATED * $Ki + $DERIVATIVE * $Kd"
 	# guard against numbers -1 < target < 1
 	if [[ "$target" =~ ^-?\.[0-9]+$ ]]; then
 		target=0
@@ -110,7 +112,7 @@ do
 	sleep $INTERVAL
 	desired_fan_speed
 	get_target_fan_speed
-	if [ $CURRENT_TARGET == $TARGETFANSPEED ] || [ $CURRENT_SPEED != $CURRENT_TARGET ]; then
+	if [ $CURRENT_TARGET == $TARGETFANSPEED ]; then
 		continue
 	fi
 	set_fan_speed $TARGETFANSPEED > /dev/null 2>&1 &
