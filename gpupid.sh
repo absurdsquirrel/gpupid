@@ -2,7 +2,7 @@
 
 # Variables you want to adjust
 # coefficients for PID math
-Kp=2.00       # proportional
+Kp=2.00         # proportional
 Ki=0.05         # integral
 Kd=10.0         # derivative
 
