@@ -4,7 +4,7 @@
 # coefficients for PID math
 Kp=2.00         # proportional
 Ki=0.05         # integral
-Kd=10.0         # derivative
+Kd=5.00         # derivative
 
 # May want to adjust these, but probably best as-is
 INTERVAL=5      # how often (in seconds) to update
@@ -86,7 +86,7 @@ desired_fan_speed() {
 	get_derivative $ERROR $TIMEDELTA
 	local target=
 	target=$(bc <<< "scale=1; $ERROR * $Kp + $ACCUMULATED * $Ki + $DERIVATIVE * $Kd")
-	 echo "[DEBUG] target: $target = $ERROR * $Kp + $ACCUMULATED * $Ki + $DERIVATIVE * $Kd"
+#  echo "[DEBUG] target: $target = $ERROR * $Kp + $ACCUMULATED * $Ki + $DERIVATIVE * $Kd"
 	# guard against numbers -1 < target < 1
 	if [[ "$target" =~ ^-?\.[0-9]+$ ]]; then
 		target=0
